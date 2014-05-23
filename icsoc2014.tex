@@ -89,9 +89,14 @@ For example (Fig~\ref{fig:bp}), setting a e-government service to improuve a sch
 \begin{figure}  
 \centering
 \includegraphics[height=200pt, width=320pt]{BRPE_Eng.png}
-\caption{Scholarship management process}
+\caption[Scholarship management process]{Scholarship management process\\ To illustrate our approach, we propose to use a process of the scholarship award by the region, which collaborate with the institut in a e-government logique. In this example, each student fill a scholarship application form, upload various documents (resume, cover letter, diplomas, ...) and submit its request. Then, the institute manager, view and check each student application data to ensure that it is compliant before sends it to the region. At the regional level, applications are analyzed by agents, who decide to award or not scholarships based on eligibility criteria. Once the decision is taken by these agents, a notification is sent to each student and each school principal is informed about the decision. Students whose applications have been accepted are then requested to send their bank account information to the region in order to trasfert scholarship money.
+In this esxemple, the student application contains personnal data which require to be protected. For that, we have to secure these data against the unauthorized access.  }
 \label{fig:bp}
 \end{figure}
+
+
+We propose to focus on the student data activity access. 
+we propose a simple use case to control access to the student data. During our approach based MDS patterns implementation, security policies are automatically generated (see Fig.~\ref{fig:policy}) and associated to "Scholarship" service (see Fig.~\ref{fig:wsdl}).
 
 \subsection{Securing services}
 Depending on the perceived security risks / system vulnerabilities, different security requirements can be set. Based on the ISO/IEC 27002, the OASIS Service Reference Model (~\cite{OAS06}) defines different security requirements (Condidentiality and privacy management, Integrity, Authentication, Authorisation, Availability and Non Repudiation) that  requires the deployment of security means from the network layer (which is rather focused on the availability requirement and protection against deny of service attacks)and transport layer (which has to provide secured confidential channel between tranmitters and receivers) to the Application layer which manages most of the security requirements (Authentication, Authorisation, Non repudiation, confidentiality and privacy...). Different standards such as WS-Security, SAML, XACML, BSLA...(see XX FIG ou tableau XX) have been developped to support these security requirements implementation.
@@ -130,8 +135,8 @@ To avoid this costly over-protection or risky under-protection depending on the 
 
 
 
-
 \begin{figure}  
+
 \centering
 \includegraphics[height=200pt, width=160pt]{mds.png}
 \caption{Security policy generation process based on MDS}
@@ -142,6 +147,9 @@ To avoid this costly over-protection or risky under-protection depending on the 
 
 
 \subsection{MDS@Runtime: Adapting security deployment in service operation}
+
+
+
 Probl\`eme pos\'e : le d\'eploiement dynamique de la s\'ecurit\'e pour \'eviter l’over / under protection. Dans un contexte dynamique, on ne peut plus consid\'erer qu’on va mettre toute la s\'ecurit\'e dans le code du service / invoquer les politiques  une fois pour toute car il faudrait alors faire toutes les invocations en syst\'ematique et l’over protection est particuli\`erement couteuse. Ici On pourrait mettre un exemple de mesure du service qui invoque les services d’authentification /autorisation et monter le diff\'erentiel en temps d’ex\'ecution. Ce constat conduit donc \`a renoncer \`a la vision « compil\'ee » de la s\'ecurit\'e, c’est-\`a-dire \`a faire une pr\'e-orchestration des diff\'erents services de s\'ecurit\'e mais \`a adopter une vision « interpr\'et\'ee » de la s\'ecurit\'e pour reporter les derni\`ere phases de g\'en\'eration sous forme d’une s\'election / composition / orchestration de services de s\'ecurit\'e au moment de l’ex\'ecution.
 Deuxi\`eme axe : il faut expliquer que la solution doit pouvoir \^etre adapt\'ee  diff\'erents contexte donc il faut repenser l’architecture traditionnelle pour int\'egrer cette \'etape de s\'ecurisation dynamique. On termine donc avec le sch\'ema d’architecture mis dans le ppt de Philippe et son explication : on sur une architecture existante et on construit  un intercepteur plugg\'e sur le middleware. Cet intercepteur permet de r\'ecup\'erer les invocations de service puis invoque un m\'ediateur de s\'ecurit\'e charg\'e d’interpr\'eter les politiques. A partir de ce parsing on int\`egre le mod\`ele de plateforme pour d\'ecider si on doit ou pas composer un chaîne de services de s\'ecurit\'e (qui peuvent \^etre soient des services de s\'ecurit\'e propre au SI ou une offre de services de s\'ecurit\'e g\'en\'erique qu’on peut mettre en SecaaS). Puis on « orchestre » localement l’invocation de ces services avant d’invoquer le service fonctionnel
 On ajoute un diagramme de composants pour expliquer le d\'etail de l’architecture.
@@ -156,6 +164,14 @@ Implementing a Service Oriented Architecture (SOA) requires a middleware for bot
 \label{fig:archi}
 \end{figure}
 
+
+Our architecture is built on the traditional service / middleware / hosting platforms architecture (see fig X.a). In order to avoid under or over protection depending on the runtime context, we propose to outsource the security management. As stated in the previous section, the security policy attached to the different business services expresses the protection requirement for this service. Plugged on the classical business service / middleware / hosting cloud platform(s) architecture, our MDS@Runtime environment (see fig XX) consists in :
+-	A specific Interceptor component plugged on the middleware intercepts the service /middleware interaction (step 1) and routes this interaction to the MDS@Runtime component (step 2) 
+-	The MDS@runtime component  is the core component to acheive the dynamic security deployent. It consists in a 3 sub components : 
+o	The policy manager parses the service description, extracts and loads the associated policy files before launching the conrtext acquisitopn process.
+o	 The context manager collects information associated to the execution context (steps 3 and 4). It transfers the results to the security mediator
+o	The security ediator parses the security policy to get the protection level associated to each security service. Depending on the execution context, it selects and composes security services to implement the required protection. Then it orchestrates the security services invocation (steps 5 and 6) and if it succeedes it routes back the business service / middleware interaction to the middleware.
+-	The Security as a Service (IV) component gathers implementation of various security services (authentication, autorisation, integrity controls…) in a SaaS vision.
 
 \section{Implementation : MDS@Runtime with FraSCAti}
 \subsection{Frascati Organisation}
@@ -239,10 +255,7 @@ Pr\'esentation du use-case (reprendre de SAR) et expliquer les 2 contextes de fo
 On peut mettre \'eventuellement une comparaison des temps avec une invocation syst\'ematique de l’authentification puis authentification / autorisation d’acc\`es pour montrer l’int\'er\^et de notre approche (sauf si on le met dans le point 2). On termine avec l’\'evaluation des temps de r\'eponses en montrant que l’intent et le d\'eploiement du m\'ediateur restent acceptables par rapport au cas de d\'eploiement syst\'ematique des services de s\'ecurit\'e.
 
 
-To illustrate our approach, we propose to use a process of the scholarship award by the region, which collaborate with the institut in a e-government logique. In this example, each student fill a scholarship application form, upload various documents (resume, cover letter, diplomas, ...) and submit its request. Then, the institute manager, view and check each student application data to ensure that it is compliant before sends it to the region. At the regional level, applications are analyzed by agents, who decide to award or not scholarships based on eligibility criteria. Once the decision is taken by these agents, a notification is sent to each student and each school principal is informed about the decision. Students whose applications have been accepted are then requested to send their bank account information to the region in order to trasfert scholarship money.
-In this esxemple, the student application contains personnal data which require to be protected. For that, we have to secure these data against the unauthorized access.  
-We propose to focus on the student data activity 
-we propose a simple use case to control access to the student data. During our approach based MDS patterns implementation, security policies are automatically generated (see Fig.~\ref{fig:policy}) and associated to "Scholarship" service (see Fig.~\ref{fig:wsdl}).
+
 
 
 
